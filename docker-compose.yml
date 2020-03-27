@@ -5,7 +5,7 @@ services:
   php:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/php/Dockerfile
     image: php
     container_name: php
     restart: "no"
@@ -37,7 +37,9 @@ services:
   mysql:
     image: mysql
     container_name: mysql
-    command: ["--default-authentication-plugin=mysql_native_password"]
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - '--character-set-server=utf8'
     restart: "no"
     tty: true
     ports:
@@ -67,7 +69,7 @@ services:
     networks:
       - app-network
   nodejs:
-    image: node:12
+    image: node:13
     user: node
     working_dir: /home/node/app
     environment:
@@ -78,6 +80,15 @@ services:
       - ./:/home/node/app
     networks:
       - app-network
+  composer:
+    image: composer
+    networks:
+      - app-network
+    ports:
+      - "9001:9000"
+    volumes:
+      - .:/app
+    command: install
 
 #Docker Networks
 networks:
