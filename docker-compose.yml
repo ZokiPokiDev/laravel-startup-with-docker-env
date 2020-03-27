@@ -2,12 +2,14 @@ version: '3'
 
 services:
   #PHP Service
-  php:
+  app:
     build:
+      args:
+        user: panev
+        uid: 1000
       context: .
       dockerfile: docker/php/Dockerfile
     image: php
-    container_name: php
     restart: "no"
     tty: true
     environment:
@@ -20,9 +22,8 @@ services:
     networks:
       - app-network
   #Nginx Service
-  nginx:
+  webserver:
     image: nginx:alpine
-    container_name: nginx
     restart: "no"
     tty: true
     ports:
@@ -33,10 +34,9 @@ services:
       - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
     networks:
       - app-network
-  #MySQL Service
+  #DB Service
   mysql:
     image: mysql
-    container_name: mysql
     command:
       - "--default-authentication-plugin=mysql_native_password"
       - '--character-set-server=utf8'
@@ -52,7 +52,7 @@ services:
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
-      - ./docker/mysql/:/var/lib/mysql
+      - ./docker/mysql/.data/db:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
       - app-network
@@ -89,6 +89,13 @@ services:
     volumes:
       - .:/app
     command: install
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    command: redis-server
+    networks:
+      - app-network
 
 #Docker Networks
 networks:
